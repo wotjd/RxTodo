@@ -13,6 +13,7 @@ import RxSwift
 
 typealias TaskListSection = SectionModel<Void, TaskCellReactor>
 
+@dynamicMemberLookup
 final class TaskListViewReactor: Reactor {
 
   enum Action {
@@ -46,6 +47,14 @@ final class TaskListViewReactor: Reactor {
       isEditing: false,
       sections: [TaskListSection(model: Void(), items: [])]
     )
+  }
+  
+  subscript<T>(dynamicMember keyPath: KeyPath<State, T>) -> Observable<T> {
+    self.state.map({ $0[keyPath: keyPath] })
+  }
+
+  subscript<T>(mapper: @escaping (State) -> T) -> Observable<T> {
+    self.state.map(mapper)
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
@@ -175,4 +184,39 @@ final class TaskListViewReactor: Reactor {
     return TaskEditViewReactor(provider: self.provider, mode: .edit(task))
   }
 
+}
+
+@dynamicMemberLookup
+protocol DynamicMemberLookupableObservableType {
+  associatedtype Element
+  
+  var observable: Observable<Element> { get }
+  
+  subscript<T>(dynamicMember keyPath: KeyPath<Element, T>) -> Observable<T> { get }
+}
+
+extension DynamicMemberLookupableObservableType {
+  subscript<T>(dynamicMember keyPath: KeyPath<Element, T>) -> Observable<T> {
+    self.observable.map({ $0[keyPath: keyPath] })
+  }
+}
+
+extension Observable: DynamicMemberLookupableObservableType {
+  var observable: Observable<Element> { self }
+}
+
+extension ObservableType {
+  func map<O>(_ keyPaths: KeyPath<E, O>...) -> Observable<O> {
+    self.flatMap { element -> Observable<O> in
+      .from(keyPaths.map { keyPath in element[keyPath: keyPath] })
+    }
+  }
+  
+  // TODO O1,O2,O3 (refer combine latest)
+  
+  // TODO: withLatestFrom
+}
+
+extension PrimitiveSequenceType {
+  
 }

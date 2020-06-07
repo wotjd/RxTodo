@@ -100,22 +100,22 @@ final class TaskEditViewController: BaseViewController, View {
       .disposed(by: self.disposeBag)
 
     // State
-    reactor.state.asObservable().map { $0.title }
+    reactor.state.title
       .distinctUntilChanged()
       .bind(to: self.navigationItem.rx.title)
       .disposed(by: self.disposeBag)
 
-    reactor.state.asObservable().map { $0.taskTitle }
+    reactor.state.taskTitle
       .distinctUntilChanged()
       .bind(to: self.titleInput.rx.text)
       .disposed(by: self.disposeBag)
 
-    reactor.state.asObservable().map { $0.canSubmit }
+    reactor.state.canSubmit
       .distinctUntilChanged()
       .bind(to: self.doneButtonItem.rx.isEnabled)
       .disposed(by: self.disposeBag)
 
-    reactor.state.asObservable().map { $0.isDismissed }
+    reactor.state.isDismissed
       .distinctUntilChanged()
       .filter { $0 }
       .subscribe(onNext: { [weak self] _ in

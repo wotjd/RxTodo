@@ -115,7 +115,7 @@ final class TaskListViewController: BaseViewController, View {
       .disposed(by: self.disposeBag)
 
     self.tableView.rx.modelSelected(type(of: self.dataSource).Section.Item.self)
-      .filter(reactor.state.map { $0.isEditing })
+      .filter(reactor.state.isEditing)
       .map(reactor.reactorForEditingTask)
       .subscribe(onNext: { [weak self] reactor in
         guard let `self` = self else { return }
@@ -126,11 +126,11 @@ final class TaskListViewController: BaseViewController, View {
       .disposed(by: self.disposeBag)
 
     // State
-    reactor.state.asObservable().map { $0.sections }
+    reactor.state.sections
       .bind(to: self.tableView.rx.items(dataSource: self.dataSource))
       .disposed(by: self.disposeBag)
 
-    reactor.state.asObservable().map { $0.isEditing }
+    reactor.state.isEditing
       .distinctUntilChanged()
       .subscribe(onNext: { [weak self] isEditing in
         guard let `self` = self else { return }
